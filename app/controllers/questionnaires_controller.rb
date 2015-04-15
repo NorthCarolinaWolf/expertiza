@@ -21,7 +21,7 @@ class QuestionnairesController < ApplicationController
     rescue
       flash[:error] = 'The questionnaire was not able to be copied. Please check the original course for missing information.'+$!
       redirect_to :action => 'list', :controller => 'tree_display'
-    end
+
   end
 
   # Remove a given questionnaire
@@ -57,7 +57,6 @@ class QuestionnairesController < ApplicationController
   end
 
   #View a quiz questionnaire
-  # Do I need to move this method to model? it renders a view at last.
   def view_quiz
     @questionnaire = Questionnaire.find(params[:id])
     @participant = Participant.find(params[:pid]) #creating an instance variable since it needs to be sent to submitted_content/edit
@@ -88,7 +87,6 @@ class QuestionnairesController < ApplicationController
 
 
   #edit a quiz questionnaire
-  # move this method?
   def edit_quiz
     @questionnaire = Questionnaire.find(params[:id])
     render :edit
@@ -96,7 +94,6 @@ class QuestionnairesController < ApplicationController
 
 
   #save an updated quiz questionnaire to the database
-  # usage only in views/questionnaires/edit.html.erb line 5
   def update_quiz
     @questionnaire = Questionnaire.find(params[:id])
     redirect_to :controller => 'submitted_content', :action => 'edit', :id => params[:pid] if @questionnaire == nil
@@ -199,7 +196,7 @@ redirect_to :controller => 'submitted_content', :action => 'edit', :id => params
 
       save
       save_choices @questionnaire.id
-      if @successful_create
+      if @successful_create == true
         flash[:note] = "Quiz was successfully created"
       end
       redirect_to :controller => 'submitted_content', :action => 'edit', :id => participant_id
@@ -214,7 +211,6 @@ redirect_to :controller => 'submitted_content', :action => 'edit', :id => params
   end
 
   #seperate method for creating a quiz questionnaire because of differences in permission
-  #used only in views/questionnaires/new_quiz.erb line 4
   def create_quiz_questionnaire
     valid = QuizQuestionnaire.valid_quiz(params[:aid],params[:new_question],params[:question_type],params[:new_choices])
     if valid.eql?("valid")
@@ -309,8 +305,6 @@ redirect_to :controller => 'submitted_content', :action => 'edit', :id => params
   end
 
   #save parameters for new questions
-  # move to models/question.rb directly
-  #used only in save_new_questions line 419
   def save_new_question_parameters(qid, q_num)
     q = QuestionType.new
     q.q_type = params[:question_type][q_num][:type]
@@ -320,8 +314,6 @@ redirect_to :controller => 'submitted_content', :action => 'edit', :id => params
   end
 
   # save questions that have been added to a questionnaire
-  # put this method into models/question.rb as save_new_questions(questionnaire_id,type)?
-  #used only in save questions line 510
   def save_new_questions(questionnaire_id)
     if params[:new_question]
       # The new_question array contains all the new questions
@@ -355,7 +347,6 @@ redirect_to :controller => 'submitted_content', :action => 'edit', :id => params
 
   # delete questions from a questionnaire
   # @param [Object] questionnaire_id
-  # used only in save_questions
   def delete_questions(questionnaire_id)
     # Deletes any questions that, as a result of the edit, are no longer in the questionnaire
     questions = Question.where( "questionnaire_id = " + questionnaire_id.to_s)
@@ -385,8 +376,6 @@ redirect_to :controller => 'submitted_content', :action => 'edit', :id => params
   end
 
   # @param [Object] question_type_key
-  # since it need params[:q], do I still need to move this method and use params[:q] as parameter? if not need to move, then all the save_questions can't be moved.
-  # used only in save_questions line 538
   def update_question_type (question_type_key)
     this_q = QuestionType.find(question_type_key)
     this_q.parameters = params[:q][question_type_key][:parameters]
@@ -412,8 +401,6 @@ redirect_to :controller => 'submitted_content', :action => 'edit', :id => params
 
   # Handles questions whose wording changed as a result of the edit
   # @param [Object] questionnaire_id
-  # put this method into models/question.rb as save_questions(questionnaire_id,type)?
-  #used only in save line 390, this method is tightly related with the params[:question]
   def save_questions(questionnaire_id)
     delete_questions questionnaire_id
     save_new_questions questionnaire_id
@@ -460,7 +447,7 @@ redirect_to :controller => 'submitted_content', :action => 'edit', :id => params
         q_type = params[:question_type][questionnum.to_s][:type]
         if(q_type!="Essay")
           for choice_key in params[:new_choices][questionnum.to_s][q_type].keys
-    
+
             if params[:new_choices][questionnum.to_s][q_type][choice_key]["weight"] == 1.to_s
               score = 1
             else
@@ -493,6 +480,7 @@ redirect_to :controller => 'submitted_content', :action => 'edit', :id => params
         question_num += 1
         question.weight = 1
         question.true_false = false
+      end
     end
   end
 
